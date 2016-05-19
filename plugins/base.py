@@ -26,7 +26,9 @@
 # collectd-python:
 #   http://collectd.org/documentation/manpages/collectd-python.5.shtml
 #
-from keystoneclient.v2_0 import Client as KeystoneClient
+from keystoneauth1.identity import v2
+from keystoneauth1 import session
+from keystoneclient.v2_0 import client
 
 import collectd
 import datetime
@@ -46,8 +48,10 @@ class Base(object):
 
     def get_keystone(self):
         """Returns a Keystone.Client instance."""
-        return KeystoneClient(username=self.username, password=self.password,
-                tenant_name=self.tenant, auth_url=self.auth_url)
+        auth = v2.Password(username=self.username, password=self.password, 
+                           tenant_name=self.tenant, auth_url=self.auth_url)
+        sess = session.Session(auth=auth)
+        return client.Client(session=sess)
 
     def config_callback(self, conf):
         """Takes a collectd conf object and fills in the local config."""
